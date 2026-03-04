@@ -315,14 +315,16 @@ const generateMockStudents = (session: string, count: number): Student[] => {
         rollNumber = i + 2;
       }
       const fullName = specific.name || `Student ${i + 1}`;
+      const roll = `${session.split('-')[0].slice(-2)}31${rollNumber.toString().padStart(3, '0')}`;
       return {
         id: `${session}-${i + 1}`,
         session,
         nickname: getNickname(fullName),
-        roll: `${session.split('-')[0].slice(-2)}31${rollNumber.toString().padStart(3, '0')}`,
+        roll,
         bloodGroup: bloodGroups[Math.floor(Math.random() * bloodGroups.length)],
         hometown: "Khulna, Bangladesh",
-        ...specific
+        ...specific,
+        photoUrl: `/${roll}.jpg`
       };
     }) as Student[];
   }

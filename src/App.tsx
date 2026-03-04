@@ -1,4 +1,4 @@
-import React, { useState, useMemo, memo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, memo, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useScroll, useSpring, useMotionValue } from 'motion/react';
 import { 
   Search, 
@@ -103,68 +103,6 @@ const MagneticButton = ({ children, onClick, className, variant = 'primary' }: {
   );
 };
 
-const StarBackground = memo(() => {
-  const canvasRef = React.useRef<HTMLCanvasElement>(null);
-
-  React.useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d', { alpha: false }); // Optimization
-    if (!ctx) return;
-
-    let animationFrameId: number;
-    let stars: { x: number; y: number; size: number; speed: number }[] = [];
-
-    const initStars = () => {
-      const isMobile = window.innerWidth < 768;
-      const count = isMobile ? 30 : 80; // Reduced count for better performance
-      stars = Array.from({ length: count }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 1.2 + 0.3,
-        speed: Math.random() * 0.2 + 0.05
-      }));
-    };
-
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      initStars();
-    };
-
-    let timeoutId: ReturnType<typeof setTimeout>;
-    const debouncedResize = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(resize, 250);
-    };
-
-    const draw = () => {
-      ctx.fillStyle = '#050505'; // Match background
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-      stars.forEach(star => {
-        ctx.fillRect(star.x, star.y, star.size, star.size);
-        star.y += star.speed;
-        if (star.y > canvas.height) star.y = -star.size;
-      });
-      animationFrameId = requestAnimationFrame(draw);
-    };
-
-    resize();
-    draw();
-
-    window.addEventListener('resize', debouncedResize);
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      window.removeEventListener('resize', debouncedResize);
-      clearTimeout(timeoutId);
-    };
-  }, []);
-
-  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0 smooth-gpu" style={{ willChange: 'transform' }} />;
-});
-
 const LoadingScreen = () => (
   <motion.div
     initial={{ opacity: 1 }}
@@ -258,15 +196,19 @@ const StudentCard = memo(({ student, onClick }: StudentCardProps) => (
     aria-label={`View profile of ${student.name}`}
     className="group bento-card p-2 sm:p-4 cursor-pointer smooth-gpu outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
   >
-    <div className="relative aspect-[4/5] mb-2 sm:mb-4 overflow-hidden rounded-[1.2rem] sm:rounded-[1.8rem] bg-slate-800/50">
+    <div className="relative aspect-[4/5] mb-2 sm:mb-4 overflow-hidden rounded-[1.2rem] sm:rounded-[1.8rem] bg-slate-800/50 smooth-gpu">
       <img
         src={student.photoUrl}
         alt={student.name}
         loading="lazy"
         referrerPolicy="no-referrer"
-        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+        onError={(e) => {
+          const target = e.target as HTMLImageElement;
+          target.src = `https://picsum.photos/seed/${student.id}/400/400`;
+        }}
+        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
     </div>
     
     <div className="space-y-0.5 sm:space-y-2 px-1">
@@ -315,57 +257,55 @@ const StudentModal = ({
         animate={{ scale: 1, y: 0, opacity: 1 }}
         exit={{ scale: 0.95, y: 20, opacity: 0 }}
         transition={{ type: "spring", damping: 30, stiffness: 300, mass: 0.8 }}
-        className="bg-slate-900 w-full max-w-2xl rounded-[2rem] sm:rounded-[3rem] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.8)] border border-white/5 my-auto relative smooth-gpu"
+        className="bg-slate-900 w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.8)] border border-white/5 my-auto relative smooth-gpu"
         onClick={e => e.stopPropagation()}
       >
-        <div className="relative h-48 sm:h-64 bg-indigo-950/40 overflow-hidden">
-          <img 
-            src={`https://picsum.photos/seed/${student.id}-cover/1200/400?blur=10`} 
-            alt="Cover" 
-            className="w-full h-full object-cover opacity-40"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-900" />
+        <div className="relative h-32 sm:h-40 bg-gradient-to-br from-indigo-600/20 to-violet-600/20 overflow-hidden">
+          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10" />
           <button 
             onClick={onClose}
-            className="absolute top-4 right-4 sm:top-8 sm:right-8 p-2 sm:p-3 bg-white/10 hover:bg-white/20 safari-blur-md rounded-full text-white transition-all duration-300 z-10 shadow-xl border border-white/5"
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 bg-white/10 hover:bg-white/20 safari-blur-md rounded-full text-white transition-all duration-300 z-10 shadow-xl border border-white/5"
           >
             <X size={18} />
           </button>
         </div>
         
-        <div className="px-4 sm:px-10 pb-6 sm:pb-10 -mt-16 sm:-mt-24 relative z-10">
-          <div className="flex flex-col md:flex-row gap-4 sm:gap-6 items-center md:items-end">
-            <div className="relative group">
+        <div className="px-6 sm:px-10 pb-8 sm:pb-10 -mt-12 sm:-mt-16 relative z-10">
+          <div className="flex flex-col items-center text-center">
+            <div className="relative group mb-4 sm:mb-6">
               <motion.div 
                 layoutId={`avatar-${student.id}`}
                 className="relative"
               >
-                <div className="absolute -inset-2 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-[1.5rem] sm:rounded-[2.5rem] blur-xl opacity-20 group-hover:opacity-40 transition duration-700" />
+                <div className="absolute -inset-2 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-[2rem] blur-xl opacity-20 group-hover:opacity-40 transition duration-700" />
                 <img
                   src={student.photoUrl}
                   alt={student.name}
                   referrerPolicy="no-referrer"
-                  className="relative w-28 h-28 sm:w-48 sm:h-48 rounded-[1.5rem] sm:rounded-[2.5rem] border-4 sm:border-8 border-slate-900 shadow-2xl object-cover bg-slate-800"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = `https://picsum.photos/seed/${student.id}/400/400`;
+                  }}
+                  className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-[2rem] border-4 border-slate-900 shadow-2xl object-cover bg-slate-800"
                 />
               </motion.div>
             </div>
-            <div className="flex-1 text-center md:text-left pb-1 sm:pb-2">
+            <div className="space-y-2">
               <motion.h2 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="text-xl sm:text-4xl font-display font-black text-white tracking-tight leading-tight mb-1 sm:mb-2"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-2xl sm:text-3xl font-display font-black text-white tracking-tight leading-tight"
               >
                 {student.name}
               </motion.h2>
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-1.5 sm:gap-2">
-                <span className="px-2 py-0.5 sm:px-3 sm:py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-[7px] sm:text-[9px] font-black tracking-widest uppercase border border-indigo-500/20">
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <span className="px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-[8px] sm:text-[10px] font-black tracking-widest uppercase border border-indigo-500/20">
                   {student.roll}
                 </span>
-                <span className="px-2 py-0.5 sm:px-3 sm:py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[7px] sm:text-[9px] font-black tracking-widest uppercase border border-emerald-500/20">
+                <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[8px] sm:text-[10px] font-black tracking-widest uppercase border border-emerald-500/20">
                   Batch {student.session}
                 </span>
-                <span className="px-2 py-0.5 sm:px-3 sm:py-1 rounded-full bg-rose-500/10 text-rose-400 text-[7px] sm:text-[9px] font-black tracking-widest uppercase border border-rose-500/20">
+                <span className="px-3 py-1 rounded-full bg-rose-500/10 text-rose-400 text-[8px] sm:text-[10px] font-black tracking-widest uppercase border border-rose-500/20">
                   {student.bloodGroup}
                 </span>
               </div>
@@ -373,15 +313,15 @@ const StudentModal = ({
           </div>
 
           {!isLoggedIn ? (
-            <div className="mt-8 sm:mt-12 p-6 sm:p-10 rounded-[1.5rem] sm:rounded-[2.5rem] bg-white/5 border border-dashed border-white/10 text-center">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-indigo-900/30 rounded-xl sm:rounded-2xl flex items-center justify-center text-indigo-400 mx-auto mb-4 sm:mb-6">
+            <div className="mt-8 p-6 sm:p-8 rounded-[2rem] bg-white/5 border border-dashed border-white/10 text-center">
+              <div className="w-12 h-12 bg-indigo-900/30 rounded-2xl flex items-center justify-center text-indigo-400 mx-auto mb-4">
                 <Lock size={24} />
               </div>
-              <h3 className="text-xl sm:text-2xl font-display font-black text-white mb-2 sm:mb-3">Profile Locked</h3>
-              <p className="text-slate-400 font-medium mb-6 sm:mb-8 text-xs sm:text-base">You have to login to see the full info of this student.</p>
+              <h3 className="text-xl font-display font-black text-white mb-2">Profile Locked</h3>
+              <p className="text-slate-400 font-medium mb-6 text-sm">You have to login to see the full info of this student.</p>
               <button 
                 onClick={onLoginClick}
-                className="px-6 py-3 sm:px-8 sm:py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl sm:rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-500/20 transition-all duration-300"
+                className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-500/20 transition-all duration-300"
               >
                 Login to Unlock
               </button>
@@ -389,91 +329,78 @@ const StudentModal = ({
           ) : (
             <>
               {student.bio && (
-                <div className="mt-8 sm:mt-12 relative">
-                  <div className="absolute -left-4 sm:-left-6 top-0 text-6xl sm:text-8xl text-indigo-500/10 font-serif select-none">“</div>
-                  <p className="text-base sm:text-2xl text-slate-200 font-serif italic leading-relaxed px-2 sm:px-4 relative z-10">
-                    {student.bio}
+                <div className="mt-8 relative text-center">
+                  <p className="text-sm sm:text-lg text-slate-300 font-serif italic leading-relaxed px-4">
+                    "{student.bio}"
                   </p>
                 </div>
               )}
 
-              <div className="mt-8 sm:mt-12 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="group flex items-center gap-3 sm:gap-5 p-4 sm:p-5 rounded-[1.2rem] sm:rounded-3xl bg-white/5 border border-white/5 transition-all duration-500 hover:bg-white/10 hover:shadow-2xl hover:shadow-indigo-500/5">
-                    <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-indigo-900/30 flex items-center justify-center text-indigo-400 shrink-0 group-hover:scale-110 transition-transform duration-500">
-                      <Mail size={20} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[8px] sm:text-[10px] uppercase tracking-[0.2em] font-black text-slate-500 mb-0.5 sm:mb-1">Email Address</p>
-                      <p className="text-xs sm:text-base font-bold text-slate-100 truncate">{student.email}</p>
-                    </div>
-                    <button 
-                      onClick={copyEmail}
-                      className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-white/10 text-slate-400 hover:text-indigo-400 transition-colors shadow-sm"
-                    >
-                      {copied ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
-                    </button>
+              <div className="mt-8 space-y-3">
+                <div className="group flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 transition-all duration-500 hover:bg-white/10">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-900/30 flex items-center justify-center text-indigo-400 shrink-0">
+                    <Mail size={18} />
                   </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[8px] uppercase tracking-[0.2em] font-black text-slate-500 mb-0.5">Email Address</p>
+                    <p className="text-xs sm:text-sm font-bold text-slate-100 truncate">{student.email}</p>
+                  </div>
+                  <button 
+                    onClick={copyEmail}
+                    className="p-2 rounded-lg bg-white/10 text-slate-400 hover:text-indigo-400 transition-colors"
+                  >
+                    {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                  </button>
+                </div>
 
-                  <div className="group flex items-center gap-3 sm:gap-5 p-4 sm:p-5 rounded-[1.2rem] sm:rounded-3xl bg-white/5 border border-white/5 transition-all duration-500 hover:bg-white/10 hover:shadow-2xl hover:shadow-emerald-500/5">
-                    <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-emerald-900/30 flex items-center justify-center text-emerald-400 shrink-0 group-hover:scale-110 transition-transform duration-500">
-                      <Phone size={20} />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="group flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/5 transition-all duration-500 hover:bg-white/10">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-900/30 flex items-center justify-center text-emerald-400 shrink-0">
+                      <Phone size={16} />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[8px] sm:text-[10px] uppercase tracking-[0.2em] font-black text-slate-500 mb-0.5 sm:mb-1">Phone Number</p>
-                      <p className="text-xs sm:text-base font-bold text-slate-100">{student.phone}</p>
+                      <p className="text-[7px] uppercase tracking-[0.2em] font-black text-slate-500 mb-0.5">Phone</p>
+                      <p className="text-[10px] sm:text-xs font-bold text-slate-100 truncate">{student.phone}</p>
                     </div>
                   </div>
 
-                  <div className="group flex items-center gap-3 sm:gap-5 p-4 sm:p-5 rounded-[1.2rem] sm:rounded-3xl bg-white/5 border border-white/5 transition-all duration-500 hover:bg-white/10 hover:shadow-2xl hover:shadow-blue-500/5">
-                    <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-blue-900/30 flex items-center justify-center text-blue-400 shrink-0 group-hover:scale-110 transition-transform duration-500">
-                      <MapPin size={20} />
+                  <div className="group flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/5 transition-all duration-500 hover:bg-white/10">
+                    <div className="w-8 h-8 rounded-lg bg-blue-900/30 flex items-center justify-center text-blue-400 shrink-0">
+                      <MapPin size={16} />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[8px] sm:text-[10px] uppercase tracking-[0.2em] font-black text-slate-500 mb-0.5 sm:mb-1">Hometown</p>
-                      <p className="text-xs sm:text-base font-bold text-slate-100">{student.hometown}</p>
+                      <p className="text-[7px] uppercase tracking-[0.2em] font-black text-slate-500 mb-0.5">Hometown</p>
+                      <p className="text-[10px] sm:text-xs font-bold text-slate-100 truncate">{student.hometown}</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="group flex items-center gap-3 sm:gap-5 p-4 sm:p-5 rounded-[1.2rem] sm:rounded-3xl bg-white/5 border border-white/5 transition-all duration-500 hover:bg-white/10 hover:shadow-2xl hover:shadow-rose-500/5">
-                    <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-rose-900/30 flex items-center justify-center text-rose-400 shrink-0 group-hover:scale-110 transition-transform duration-500">
-                      <Droplets size={20} />
+                {student.currentWorkplace && (
+                  <div className="group flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 transition-all duration-500 hover:bg-white/10">
+                    <div className="w-10 h-10 rounded-xl bg-amber-900/30 flex items-center justify-center text-amber-400 shrink-0">
+                      <Briefcase size={18} />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[8px] sm:text-[10px] uppercase tracking-[0.2em] font-black text-slate-500 mb-0.5 sm:mb-1">Blood Group</p>
-                      <p className="text-xs sm:text-base font-bold text-slate-100">{student.bloodGroup}</p>
+                      <p className="text-[8px] uppercase tracking-[0.2em] font-black text-slate-500 mb-0.5">Current Status</p>
+                      <p className="text-xs sm:text-sm font-bold text-slate-100 truncate">{student.currentWorkplace}</p>
                     </div>
                   </div>
-
-                  {student.currentWorkplace && (
-                    <div className="group flex items-center gap-3 sm:gap-5 p-4 sm:p-5 rounded-[1.2rem] sm:rounded-3xl bg-white/5 border border-white/5 transition-all duration-500 hover:bg-white/10 hover:shadow-2xl hover:shadow-amber-500/5">
-                      <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-amber-900/30 flex items-center justify-center text-amber-400 shrink-0 group-hover:scale-110 transition-transform duration-500">
-                        <Briefcase size={20} />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[8px] sm:text-[10px] uppercase tracking-[0.2em] font-black text-slate-500 mb-0.5 sm:mb-1">Current Status</p>
-                        <p className="text-xs sm:text-base font-bold text-slate-100 truncate">{student.currentWorkplace}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
 
-              <div className="mt-8 sm:mt-12 flex flex-col sm:row gap-3 sm:gap-5">
+              <div className="mt-8 flex gap-3">
                 <button 
                   disabled={student.linkedin === 'N/A'}
-                  className={`flex-1 py-4 sm:py-5 px-6 sm:px-8 rounded-xl sm:rounded-3xl font-black text-[10px] sm:text-sm uppercase tracking-[0.2em] flex items-center justify-center gap-3 sm:gap-4 transition-all duration-500 ${
+                  className={`flex-1 py-4 px-6 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all duration-500 ${
                     student.linkedin === 'N/A' 
                       ? 'bg-white/5 text-slate-500 cursor-not-allowed border border-white/5' 
                       : 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-2xl shadow-indigo-500/20'
                   }`}
                 >
-                  <Linkedin size={20} /> {student.linkedin === 'N/A' ? 'LinkedIn N/A' : 'LinkedIn Profile'}
+                  <Linkedin size={18} /> {student.linkedin === 'N/A' ? 'LinkedIn N/A' : 'LinkedIn Profile'}
                 </button>
-                <button className="p-4 sm:p-5 bg-white/5 text-slate-300 rounded-xl sm:rounded-3xl hover:bg-white/10 transition-all duration-500 border border-white/5 shadow-xl">
-                  <ExternalLink size={20} />
+                <button className="p-4 bg-white/5 text-slate-300 rounded-2xl hover:bg-white/10 transition-all duration-500 border border-white/5 shadow-xl">
+                  <ExternalLink size={18} />
                 </button>
               </div>
             </>
@@ -566,7 +493,7 @@ const LoginModal = ({
                 required
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="Sum of digits of roll"
+                placeholder="••••••••"
                 className="w-full pl-11 pr-4 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all font-bold text-sm sm:text-base"
               />
             </div>
@@ -593,6 +520,7 @@ const LoginModal = ({
 export default function App() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [selectedSession, setSelectedSession] = useState<string>(mockBatches[0].session);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Simulate initial load
@@ -613,11 +541,6 @@ export default function App() {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
-  });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -671,14 +594,12 @@ export default function App() {
         {!isLoaded && <LoadingScreen key="loader" />}
       </AnimatePresence>
 
-      <StarBackground />
-      {/* Grain Overlay */}
-      <div className="fixed inset-0 pointer-events-none z-[1000] opacity-[0.03] mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
+      {/* Grain Overlay Removed for Performance */}
       
-      {/* Scroll Progress Bar */}
+      {/* Scroll Progress Bar - Simplified */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-indigo-600 z-[200] origin-left"
-        style={{ scaleX }}
+        style={{ scaleX: scrollYProgress }}
       />
 
       {/* Department Seal Background */}
@@ -693,27 +614,23 @@ export default function App() {
 
       {/* Header / Hero */}
       <header className="relative bg-slate-950 pt-12 sm:pt-20 pb-20 sm:pb-32 px-4 sm:px-6 overflow-hidden transition-colors duration-700 smooth-gpu">
-        {/* Animated Background Elements */}
+        {/* Animated Background Elements - Simplified on Mobile */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <motion.div 
             animate={{ 
-              scale: [1, 1.2, 1],
-              opacity: [0.3, 0.5, 0.3],
-              x: [0, 50, 0],
-              y: [0, -30, 0]
+              scale: [1, 1.1, 1],
+              opacity: [0.2, 0.3, 0.2],
             }}
             transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-            className="absolute top-[-10%] left-[-5%] w-[50%] h-[50%] bg-indigo-600/20 rounded-full blur-[120px]" 
+            className="absolute top-[-10%] left-[-5%] w-[50%] h-[50%] bg-indigo-600/10 rounded-full blur-[120px] hidden sm:block" 
           />
           <motion.div 
             animate={{ 
-              scale: [1.2, 1, 1.2],
-              opacity: [0.2, 0.4, 0.2],
-              x: [0, -40, 0],
-              y: [0, 40, 0]
+              scale: [1.1, 1, 1.1],
+              opacity: [0.1, 0.2, 0.1],
             }}
             transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-            className="absolute bottom-[-10%] right-[-5%] w-[50%] h-[50%] bg-violet-600/15 rounded-full blur-[120px]" 
+            className="absolute bottom-[-10%] right-[-5%] w-[50%] h-[50%] bg-violet-600/10 rounded-full blur-[120px] hidden sm:block" 
           />
         </div>
 
@@ -929,6 +846,7 @@ export default function App() {
                         <Search className="text-slate-400 dark:text-slate-200 group-focus-within:text-indigo-500 transition-colors duration-500" size={20} />
                       </div>
                       <input
+                        ref={searchInputRef}
                         type="text"
                         placeholder="Search by Name, Roll, or Workplace..."
                         value={searchQuery}
@@ -966,7 +884,15 @@ export default function App() {
                                   onClick={() => handleStudentClick(student)}
                                   className="w-full flex items-center gap-4 p-3 rounded-2xl hover:bg-white dark:hover:bg-white/10 transition-colors text-left group"
                                 >
-                                  <img src={student.photoUrl} className="w-10 h-10 rounded-xl object-cover" referrerPolicy="no-referrer" />
+                                  <img 
+                                    src={student.photoUrl} 
+                                    className="w-10 h-10 rounded-xl object-cover" 
+                                    referrerPolicy="no-referrer" 
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement;
+                                      target.src = `https://picsum.photos/seed/${student.id}/400/400`;
+                                    }}
+                                  />
                                   <div>
                                     <p className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 transition-colors">{student.name}</p>
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{student.roll}</p>
@@ -1137,6 +1063,10 @@ export default function App() {
                         alt={student.name} 
                         className="w-16 h-16 rounded-2xl object-cover"
                         referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = `https://picsum.photos/seed/${student.id}/400/400`;
+                        }}
                       />
                       <div className="flex-1 min-w-0">
                         <h3 className="font-display font-bold text-slate-900 dark:text-white text-lg truncate group-hover:text-indigo-600 transition-colors">{student.name}</h3>
@@ -1309,11 +1239,8 @@ export default function App() {
           >
             <button
               onClick={() => {
-                const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
-                searchInput?.focus();
-                const rect = searchInput?.getBoundingClientRect();
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                window.scrollTo({ top: rect ? rect.top + scrollTop - 150 : 0, behavior: 'smooth' });
+                searchInputRef.current?.focus();
+                searchInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
               }}
               className="w-14 h-14 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform duration-300 shadow-indigo-500/40"
             >
