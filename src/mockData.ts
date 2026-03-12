@@ -1,6 +1,6 @@
 import { Student, Batch } from './types';
 
-const sessions = ['2018-19', '2019-20', '2020-21', '2021-22', '2022-23', '2023-24'];
+const sessions = ['2018-19', '2019-20', '2020-21', '2021-22', '2022-23', '2023-24', '2024-2025'];
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
 const workplaces = [
   'Tesla (Robotics)', 'Boston Dynamics', 'ABB Automation', 'Siemens', 'Fanuc', 
@@ -33,17 +33,18 @@ const generateMockStudents = (session: string, count: number): Student[] => {
 
   const students = Array.from({ length: count }, (_, i) => {
     const name = `Student ${i + 1}`;
+    const roll = `${session.split('-')[0].slice(-2)}31${(i + 1).toString().padStart(3, '0')}`;
     return {
       id: `${session}-${i + 1}`,
       name,
       nickname: name,
       session,
-      roll: `${session.split('-')[0].slice(-2)}31${(i + 1).toString().padStart(3, '0')}`,
+      roll,
       email: `student${i + 1}.${session.replace('-', '')}@example.com`,
       phone: `+880 1${Math.floor(Math.random() * 900000000 + 100000000)}`,
       bloodGroup: bloodGroups[Math.floor(Math.random() * bloodGroups.length)],
       currentWorkplace: session === '2023-24' ? 'Undergraduate Student' : workplaces[Math.floor(Math.random() * workplaces.length)],
-      photoUrl: `https://picsum.photos/seed/${session}-${i}/400/400`,
+      photoUrl: `/${roll}.jpg`,
       hometown: "Khulna, Bangladesh",
       bio: "Passionate about technology and building impactful solutions.",
       linkedin: "https://linkedin.com/in/username"
@@ -306,12 +307,9 @@ const generateMockStudents = (session: string, count: number): Student[] => {
       }
     ];
 
-    // Replace students array with the specific students for 2023-24
-    // We only take the first 28 students from the generated list and overwrite them
-    // or just return the specific students list mapped to the full Student type
     return specificStudents.map((specific, i) => {
       let rollNumber = i + 1;
-      if (i >= 19) { // From Muhammod Mubin onwards, skip index 20
+      if (i >= 19) {
         rollNumber = i + 2;
       }
       const fullName = specific.name || `Student ${i + 1}`;
@@ -327,6 +325,309 @@ const generateMockStudents = (session: string, count: number): Student[] => {
         photoUrl: `/${roll}.jpg`
       };
     }) as Student[];
+  }
+
+  if (session === '2024-2025') {
+    const specificStudents: Partial<Student>[] = [
+      {
+        name: "Taufiqur Rahman",
+        nickname: "Taufiq",
+        email: "rahman2431020@stud.kuet.ac.bd",
+        hometown: "Magura",
+        roll: "2431020",
+        bloodGroup: "O+",
+        phone: "01410828347",
+        linkedin: "https://www.linkedin.com/in/taufiqur-rahman-233a3838a/",
+        bio: "Everybody in this country should learn how to program a computer, because it teaches you how to think. - Steven Paul Jobs",
+        currentWorkplace: "Student"
+      },
+      {
+        name: "Sayed Mohammad Nihal",
+        nickname: "Nihal",
+        email: "nihal2431004@stud.kuet.ac.bd",
+        hometown: "Chattogram",
+        roll: "2431004",
+        bloodGroup: "N/A",
+        phone: "01615897432",
+        linkedin: "N/A",
+        bio: "N/A",
+        currentWorkplace: "Student"
+      },
+      {
+        name: "Md.Mubashshir Murshed",
+        nickname: "Murshed",
+        email: "murshedifty21@gmail.com",
+        hometown: "Munshiganj",
+        roll: "2431008",
+        bloodGroup: "O-",
+        phone: "01328954565",
+        linkedin: "https://www.linkedin.com/in/mubashshir-murshed-ifty-1149a4372",
+        bio: "N/A",
+        currentWorkplace: "Student"
+      },
+      {
+        name: "Arefin Masuk",
+        nickname: "Arefin",
+        email: "masukarefin@yahoo.com",
+        hometown: "Kushtia",
+        roll: "2431001",
+        bloodGroup: "A+",
+        phone: "01521000000",
+        linkedin: "https://www.linkedin.com/in/arefinmasuk10/",
+        bio: "Seeking the possibility.",
+        currentWorkplace: "Student"
+      },
+      {
+        name: "Ashek Mohammad Abir Hasan",
+        nickname: "Ashek",
+        email: "hasan2431018@stud.kuet.ac.bd",
+        hometown: "Sherpur",
+        roll: "2431018",
+        bloodGroup: "O+",
+        phone: "01946278018",
+        linkedin: "N/A",
+        bio: "N/A",
+        currentWorkplace: "Student"
+      },
+      {
+        name: "Muhammad Khaleed Bin Huda",
+        nickname: "Khaleed",
+        email: "khaleedbinhuda@gmail.com",
+        hometown: "Rajshahi",
+        roll: "2431013",
+        bloodGroup: "A+",
+        phone: "0522134651",
+        linkedin: "N/A",
+        bio: "Only in their dreams can men be truly free. ’Twas always thus, and always thus will be.",
+        currentWorkplace: "Student"
+      },
+      {
+        name: "Rawnok Alam Dipto",
+        nickname: "Dipto",
+        email: "alamdipto0@gmail.com",
+        hometown: "Dhaka",
+        roll: "2431010",
+        bloodGroup: "A+",
+        phone: "01521787865",
+        linkedin: "https://www.linkedin.com/in/rawnok-alam-dipto-mte",
+        bio: "N/A",
+        currentWorkplace: "Student"
+      },
+      {
+        name: "Dibonhita Bonhi",
+        nickname: "Bonhi",
+        email: "dibonhitabonhi@gmail.com",
+        hometown: "Khulna",
+        roll: "2431026",
+        bloodGroup: "O+",
+        phone: "01346884849",
+        linkedin: "N/A",
+        bio: "N/A",
+        currentWorkplace: "Student"
+      },
+      {
+        name: "MD. MUNTASIR MUKIM",
+        nickname: "MUKIM",
+        email: "muntasirmukim26472@gmail.com",
+        hometown: "Faridpur",
+        roll: "2431029",
+        bloodGroup: "O+",
+        phone: "01881748289",
+        linkedin: "N/A",
+        bio: "N/A",
+        currentWorkplace: "Student"
+      },
+      {
+        name: "Joydip Chowdhury",
+        nickname: "Joydip",
+        email: "cjoydip29@gmail.com",
+        hometown: "Chattogram",
+        roll: "2431005",
+        bloodGroup: "O+",
+        phone: "01622989986",
+        linkedin: "https://bd.linkedin.com/in/joydip-chowdhury-4583843a5",
+        bio: "Switching to your pistol is always faster than reloading",
+        currentWorkplace: "Student"
+      },
+      {
+        name: "Hemel Mondal",
+        nickname: "Hemel",
+        email: "hemelmondal0987@gmail.com",
+        hometown: "jashore",
+        roll: "2431023",
+        bloodGroup: "O+",
+        phone: "01600624312",
+        linkedin: "https://www.linkedin.com/in/hemel-mondal-071a73364",
+        bio: "N/A",
+        currentWorkplace: "Student"
+      },
+      {
+        name: "Md. Golam Rofiul Roke",
+        nickname: "Rocky",
+        email: "rokemdgolamrofiul@gmail.com",
+        hometown: "Jamalpur",
+        roll: "2431028",
+        bloodGroup: "O+",
+        phone: "01600110425",
+        linkedin: "N/A",
+        bio: "N/A",
+        currentWorkplace: "Student"
+      },
+      {
+        name: "Oyshi Baria Prite",
+        nickname: "Oyshi",
+        email: "prite2431019@stud.kuet.ac.bd",
+        hometown: "Naogaon",
+        roll: "2431019",
+        bloodGroup: "A+",
+        phone: "01303694827",
+        linkedin: "N/A",
+        bio: "N/A",
+        currentWorkplace: "Student"
+      },
+      {
+        name: "Tamzid Hossain Raj",
+        nickname: "Raj",
+        email: "raj2431024@stud.kuet.ac.bd",
+        hometown: "Satkhira",
+        roll: "2431024",
+        bloodGroup: "O+",
+        phone: "01968332388",
+        linkedin: "N/A",
+        bio: "And they planed and Allah also planed, Allah is the best of planners – Al' Imran_54",
+        currentWorkplace: "Student"
+      },
+      {
+        name: "MD.LIMON HOWLADER",
+        nickname: "Limon",
+        email: "mohammadlimon376@gmail.com",
+        hometown: "Barishal",
+        roll: "2431015",
+        bloodGroup: "O+",
+        phone: "01916319837",
+        linkedin: "N/A",
+        bio: "N/A",
+        currentWorkplace: "Student"
+      },
+      {
+        name: "MD. SAIFULLAH MAHFUZ",
+        nickname: "MAHFUZ",
+        email: "mahfuz2431007@stud.kuet.ac.bd",
+        hometown: "Chapainawabganj",
+        roll: "2431007",
+        bloodGroup: "A-",
+        phone: "01767227928",
+        linkedin: "https://www.linkedin.com/in/md-saifullah-mahfuz-ab520a298",
+        bio: "Effortless is a myth",
+        currentWorkplace: "Student"
+      },
+      {
+        name: "I. N. M. Hasib",
+        nickname: "Hasib",
+        email: "hasib2431017@stud.kuet.ac.bd",
+        hometown: "Bogura",
+        roll: "2431017",
+        bloodGroup: "O+",
+        phone: "01853710973",
+        linkedin: "https://www.linkedin.com/in/i-n-m-hasib-7b018736b",
+        bio: "Hesitation is defeat",
+        currentWorkplace: "Student"
+      },
+      {
+        name: "MD. Tanjim Ahsan Limon",
+        nickname: "Tanjim",
+        email: "ahsanlimon560@gmail.com",
+        hometown: "Jhenaidah",
+        roll: "2431016",
+        bloodGroup: "O+",
+        phone: "01570290056",
+        linkedin: "N/A",
+        bio: "N/A",
+        currentWorkplace: "Student"
+      },
+      {
+        name: "Ifty Rahman",
+        nickname: "Ifty",
+        email: "ifty.3589@gmail.com",
+        hometown: "Chapai Nawabganj",
+        roll: "2431009",
+        bloodGroup: "O+",
+        phone: "01682997301",
+        linkedin: "N/A",
+        bio: "N/A",
+        currentWorkplace: "Student"
+      },
+      {
+        name: "Anika Begum",
+        nickname: "Anika",
+        email: "begum2431022@stud.kuet.ac.bd",
+        hometown: "Sylhet",
+        roll: "2431022",
+        bloodGroup: "AB+",
+        phone: "01791917313",
+        linkedin: "N/A",
+        bio: "N/A",
+        currentWorkplace: "Student"
+      },
+      {
+        name: "Md.Fahaduzzaman Fahim",
+        nickname: "Fahim",
+        email: "fahim2431014@stud.kuet.ac.bd",
+        hometown: "Narayanganj",
+        roll: "2431014",
+        bloodGroup: "O+",
+        phone: "01401276646",
+        linkedin: "N/A",
+        bio: "N/A",
+        currentWorkplace: "Student"
+      },
+      {
+        name: "Mahir Areek",
+        nickname: "Mahir",
+        email: "islam2431003@stud.kuet.ac.bd",
+        hometown: "Dhaka",
+        roll: "2431003",
+        bloodGroup: "AB+",
+        phone: "01994666202",
+        linkedin: "N/A",
+        bio: "N/A",
+        currentWorkplace: "Student"
+      }
+    ];
+
+    return specificStudents.map((specific) => ({
+      id: `${session}-${specific.roll}`,
+      session,
+      ...specific,
+      photoUrl: `/${specific.roll}.jpg`
+    })) as Student[];
+  }
+
+  if (session === '2022-23') {
+    const specificStudents: Partial<Student>[] = [
+      {
+        name: "Saiful Islam Shanto",
+        nickname: "Shanto",
+        email: "saifulshanto333@gmail.com",
+        hometown: "Noakhali",
+        roll: "2231006",
+        bloodGroup: "AB+",
+        phone: "01540119722",
+        linkedin: "https://www.linkedin.com/in/shanto006/",
+        bio: "N/A",
+        currentWorkplace: "Student"
+      }
+    ];
+
+    const generated = students.filter(s => !specificStudents.some(spec => spec.roll === s.roll));
+    const mapped = specificStudents.map(spec => ({
+      id: `${session}-${spec.roll}`,
+      session,
+      ...spec,
+      photoUrl: `/${spec.roll}.jpg`
+    })) as Student[];
+
+    return [...mapped, ...generated].slice(0, count);
   }
 
   return students;

@@ -57,7 +57,7 @@ interface StudentCardProps {
   key?: React.Key;
 }
 
-const MagneticButton = ({ children, onClick, className, variant = 'primary' }: { 
+const MagneticButton = memo(({ children, onClick, className, variant = 'primary' }: { 
   children: React.ReactNode; 
   onClick?: () => void; 
   className?: string;
@@ -101,7 +101,7 @@ const MagneticButton = ({ children, onClick, className, variant = 'primary' }: {
       {children}
     </motion.button>
   );
-};
+});
 
 const LoadingScreen = () => (
   <motion.div
@@ -163,15 +163,15 @@ const LoadingScreen = () => (
   </motion.div>
 );
 
-const SkeletonCard = () => (
-  <div className="bento-card p-2 sm:p-4 animate-pulse">
+const SkeletonCard = memo(() => (
+  <div className="bento-card p-2 sm:p-4 animate-pulse smooth-gpu">
     <div className="aspect-[4/5] mb-3 sm:mb-5 rounded-[1.2rem] sm:rounded-[1.8rem] bg-slate-800" />
     <div className="space-y-2 px-1">
       <div className="h-4 bg-slate-800 rounded-lg w-3/4" />
       <div className="h-3 bg-slate-800 rounded-lg w-1/2" />
     </div>
   </div>
-);
+));
 
 const StudentCard = memo(({ student, onClick }: StudentCardProps) => (
   <motion.div
@@ -201,10 +201,11 @@ const StudentCard = memo(({ student, onClick }: StudentCardProps) => (
         src={student.photoUrl}
         alt={student.name}
         loading="lazy"
+        decoding="async"
         referrerPolicy="no-referrer"
         onError={(e) => {
           const target = e.target as HTMLImageElement;
-          target.src = `https://picsum.photos/seed/${student.id}/400/400`;
+          target.src = `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y`;
         }}
         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
       />
@@ -281,10 +282,11 @@ const StudentModal = ({
                 <img
                   src={student.photoUrl}
                   alt={student.name}
+                  decoding="async"
                   referrerPolicy="no-referrer"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    target.src = `https://picsum.photos/seed/${student.id}/400/400`;
+                    target.src = `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y`;
                   }}
                   className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-[2rem] border-4 border-slate-900 shadow-2xl object-cover bg-slate-800"
                 />
@@ -328,7 +330,7 @@ const StudentModal = ({
             </div>
           ) : (
             <>
-              {student.bio && (
+              {student.bio && student.bio !== 'N/A' && (
                 <div className="mt-8 relative text-center">
                   <p className="text-sm sm:text-lg text-slate-300 font-serif italic leading-relaxed px-4">
                     "{student.bio}"
@@ -389,16 +391,23 @@ const StudentModal = ({
               </div>
 
               <div className="mt-8 flex gap-3">
-                <button 
-                  disabled={student.linkedin === 'N/A'}
-                  className={`flex-1 py-4 px-6 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all duration-500 ${
-                    student.linkedin === 'N/A' 
-                      ? 'bg-white/5 text-slate-500 cursor-not-allowed border border-white/5' 
-                      : 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-2xl shadow-indigo-500/20'
-                  }`}
-                >
-                  <Linkedin size={18} /> {student.linkedin === 'N/A' ? 'LinkedIn N/A' : 'LinkedIn Profile'}
-                </button>
+                {student.linkedin !== 'N/A' ? (
+                  <a 
+                    href={student.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 py-4 px-6 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all duration-500 bg-indigo-600 text-white hover:bg-indigo-500 shadow-2xl shadow-indigo-500/20"
+                  >
+                    <Linkedin size={18} /> LinkedIn Profile
+                  </a>
+                ) : (
+                  <button 
+                    disabled
+                    className="flex-1 py-4 px-6 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all duration-500 bg-white/5 text-slate-500 cursor-not-allowed border border-white/5"
+                  >
+                    <Linkedin size={18} /> LinkedIn N/A
+                  </button>
+                )}
                 <button className="p-4 bg-white/5 text-slate-300 rounded-2xl hover:bg-white/10 transition-all duration-500 border border-white/5 shadow-xl">
                   <ExternalLink size={18} />
                 </button>
@@ -603,12 +612,12 @@ export default function App() {
       />
 
       {/* Department Seal Background */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="department-seal top-[-10%] right-[-10%] w-[60%] h-[60%] opacity-[0.02] dark:opacity-[0.05]">
-          <img src="https://i.imgur.com/kH7j2S2.png" alt="" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden smooth-gpu">
+        <div className="department-seal top-[-10%] right-[-10%] w-[60%] h-[60%] opacity-[0.02] dark:opacity-[0.05] will-change-transform">
+          <img src="https://i.imgur.com/kH7j2S2.png" alt="" className="w-full h-full object-contain" referrerPolicy="no-referrer" decoding="async" />
         </div>
-        <div className="department-seal bottom-[-10%] left-[-10%] w-[60%] h-[60%] opacity-[0.02] dark:opacity-[0.05]">
-          <img src="https://i.imgur.com/kH7j2S2.png" alt="" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+        <div className="department-seal bottom-[-10%] left-[-10%] w-[60%] h-[60%] opacity-[0.02] dark:opacity-[0.05] will-change-transform">
+          <img src="https://i.imgur.com/kH7j2S2.png" alt="" className="w-full h-full object-contain" referrerPolicy="no-referrer" decoding="async" />
         </div>
       </div>
 
@@ -717,7 +726,7 @@ export default function App() {
                 <div className="hidden sm:flex -space-x-3 sm:-space-x-4">
                   {[1, 2, 3, 4].map(i => (
                     <div key={i} className="w-8 h-8 sm:w-12 h-12 rounded-full border-2 sm:border-4 border-slate-950 bg-slate-800 overflow-hidden shadow-xl">
-                      <img src={`https://picsum.photos/seed/student${i}/100/100`} alt="User" referrerPolicy="no-referrer" />
+                      <img src="https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y" alt="User" referrerPolicy="no-referrer" />
                     </div>
                   ))}
                   <div className="w-8 h-8 sm:w-12 h-12 rounded-full border-2 sm:border-4 border-slate-950 bg-indigo-600 flex items-center justify-center text-white text-[8px] sm:text-xs font-black shadow-xl">
@@ -887,6 +896,7 @@ export default function App() {
                                   <img 
                                     src={student.photoUrl} 
                                     className="w-10 h-10 rounded-xl object-cover" 
+                                    decoding="async"
                                     referrerPolicy="no-referrer" 
                                     onError={(e) => {
                                       const target = e.target as HTMLImageElement;
@@ -1062,6 +1072,7 @@ export default function App() {
                         src={student.photoUrl} 
                         alt={student.name} 
                         className="w-16 h-16 rounded-2xl object-cover"
+                        decoding="async"
                         referrerPolicy="no-referrer"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
